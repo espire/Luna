@@ -1,0 +1,17 @@
+{
+  "uuid": "aeed7210-710b-45c2-969c-de5359d48f11",
+  "shortName": "Luna",
+  "longName": "Luna Moon Phase Watch Face",
+  "companyName": "Eli Spiro",
+  "versionCode": 1,
+  "versionLabel": "1.0.0",
+  "watchapp": {
+    "watchface": true
+  },
+  "appKeys": {
+    "dummy": 0
+  },
+  "resources": {
+    "media": []
+  }
+}
