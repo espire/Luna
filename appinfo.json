@@ -9,6 +9,13 @@
     "watchface": true
   },
   "resources": {
-    "media": []
+    "media": [
+      {
+        "name": "luna_icon",
+        "type": "png",
+        "file": "luna.png",
+        "menuIcon": "true"
+      }
+    ]
   }
 }
