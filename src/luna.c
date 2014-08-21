@@ -4,6 +4,7 @@
 static Window *window;
 
 static Layer *moon_layer;
+static TextLayer *time_layer;
 
 #define NUM_CIRCLE_POINTS 128
 #define CIRCLE_RADIUS 64
@@ -75,6 +76,19 @@ static void handle_hour_tick(struct tm *tick_time, TimeUnits units_changed) {
   layer_mark_dirty(moon_layer);
 }
 
+static void handle_minute_tick(struct tm *tick_time, TimeUnits units_changed) {
+  time_t now = time(NULL);
+  struct tm *t = localtime(&now);
+
+  static char* buffer = "00:00 Mon 00";
+  if(clock_is_24h_style()) {
+    strftime(buffer, sizeof("00:00 Mon 00"), "%H:%M %b %d", t);
+  } else {
+    strftime(buffer, sizeof("00:00 Mon 00"), "%I:%M %b %d", t);
+  }
+  text_layer_set_text(time_layer, buffer);
+}
+
 static void init() {
   window = window_create();
   window_stack_push(window, true /* Animated */);
@@ -87,17 +101,28 @@ static void init() {
   layer_set_update_proc(moon_layer, moon_layer_update_callback);
   layer_add_child(window_layer, moon_layer);
 
+  // Create the moon's drawing path and move it to the center of the screen
   moon_path = gpath_create(&circle_path_points);
+  gpath_move_to(moon_path, GPoint(bounds.size.w/2, bounds.size.h/2 - 12));
 
-  // Move the path to the center of the screen
-  gpath_move_to(moon_path, GPoint(bounds.size.w/2, bounds.size.h/2));
+  time_layer = text_layer_create(GRect(0, 136, 144, 32));
+  text_layer_set_background_color(time_layer, GColorClear);
+  text_layer_set_text_color(time_layer, GColorWhite);
+  text_layer_set_text(time_layer, "00:00 Mon 00");
+  text_layer_set_font(time_layer,
+                      fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD));
+  text_layer_set_text_alignment(time_layer, GTextAlignmentCenter);
+  layer_add_child(window_get_root_layer(window),
+                  text_layer_get_layer(time_layer));
 
   tick_timer_service_subscribe(HOUR_UNIT, handle_hour_tick);
+  tick_timer_service_subscribe(MINUTE_UNIT, handle_minute_tick);
 }
 
 static void deinit() {
   gpath_destroy(moon_path);
   layer_destroy(moon_layer);
+  text_layer_destroy(time_layer);
   window_destroy(window);
 }
 
