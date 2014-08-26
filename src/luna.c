@@ -76,7 +76,7 @@ static void handle_hour_tick(struct tm *tick_time, TimeUnits units_changed) {
   layer_mark_dirty(moon_layer);
 }
 
-static void handle_minute_tick(struct tm *tick_time, TimeUnits units_changed) {
+static void update_time() {
   time_t now = time(NULL);
   struct tm *t = localtime(&now);
 
@@ -89,9 +89,11 @@ static void handle_minute_tick(struct tm *tick_time, TimeUnits units_changed) {
   text_layer_set_text(time_layer, buffer);
 }
 
-static void init() {
-  window = window_create();
-  window_stack_push(window, true /* Animated */);
+static void handle_minute_tick(struct tm *tick_time, TimeUnits units_changed) {
+  update_time();
+}
+
+static void main_window_load(Window* window) {
   window_set_background_color(window, GColorBlack);
 
   Layer *window_layer = window_get_root_layer(window);
@@ -108,21 +110,36 @@ static void init() {
   time_layer = text_layer_create(GRect(0, 136, 144, 32));
   text_layer_set_background_color(time_layer, GColorClear);
   text_layer_set_text_color(time_layer, GColorWhite);
-  text_layer_set_text(time_layer, "00:00 Mon 00");
   text_layer_set_font(time_layer,
                       fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD));
   text_layer_set_text_alignment(time_layer, GTextAlignmentCenter);
   layer_add_child(window_get_root_layer(window),
                   text_layer_get_layer(time_layer));
+  
+  update_time();
+}
+
+static void main_window_unload(Window* window) {
+  gpath_destroy(moon_path);
+  layer_destroy(moon_layer);
+  text_layer_destroy(time_layer);
+}
+
+static void init() {
+  window = window_create();
+
+  window_set_window_handlers(window, (WindowHandlers) {
+    .load = main_window_load,
+    .unload = main_window_unload
+  });
+
+  window_stack_push(window, true /* Animated */);
 
   tick_timer_service_subscribe(HOUR_UNIT, handle_hour_tick);
   tick_timer_service_subscribe(MINUTE_UNIT, handle_minute_tick);
 }
 
 static void deinit() {
-  gpath_destroy(moon_path);
-  layer_destroy(moon_layer);
-  text_layer_destroy(time_layer);
   window_destroy(window);
 }
 

@@ -4,7 +4,7 @@
   "longName": "Luna Moon Phase Watch Face",
   "companyName": "Eli Spiro",
   "versionCode": 1,
-  "versionLabel": "1.0.0",
+  "versionLabel": "1.01",
   "watchapp": {
     "watchface": true
   },
